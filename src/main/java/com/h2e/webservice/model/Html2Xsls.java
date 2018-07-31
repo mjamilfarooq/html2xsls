@@ -3,10 +3,7 @@ package com.h2e.webservice.model;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,6 +19,7 @@ import java.util.Locale;
 
 public class Html2Xsls {
 
+    private final String license_notice = "Not a licensed Copy!!";
 
     private int getWidthFromColumns(Element row, int from, int to)
     {
@@ -38,7 +36,49 @@ public class Html2Xsls {
         return sum;
     }
 
-    public XSSFWorkbook CreateExcelFromHtml(File report) throws IOException {
+
+
+    private void CreateWaterMarkForLicensing(XSSFSheet sheet)
+    {
+
+
+
+        XSSFWorkbook workbook = sheet.getWorkbook();
+
+        //creating font
+        XSSFFont font = workbook.createFont();
+        font.setColor((short) 27);
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 50);
+        font.setFontName("Verdana");
+
+        //text to overlay
+        XSSFRichTextString rtxt = new XSSFRichTextString(license_notice);
+        rtxt.applyFont(font);
+
+        //create drawing object
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+
+        //generate watermark for full length of report
+        for (int row = 4; row < sheet.getLastRowNum(); row += 10)
+        {
+
+            XSSFClientAnchor anchor = new XSSFClientAnchor
+                    (0, 0, 1023, 255, (short) 2, row, (short) 13, row+4);
+
+
+            XSSFTextBox textbox = drawing.createTextbox(anchor);
+            textbox.setText(rtxt);
+            textbox.setNoFill(true);
+
+        }
+
+
+
+
+    }
+
+    public XSSFWorkbook CreateExcelFromHtml(File report, boolean licensed) throws IOException {
 
         Document document = Jsoup.parse(report, "WINDOWS-1252");
 
@@ -205,6 +245,10 @@ public class Html2Xsls {
             break;
 
         }
+
+
+        if (!licensed)
+            CreateWaterMarkForLicensing(workSheet);
 
     return workBook;
 
