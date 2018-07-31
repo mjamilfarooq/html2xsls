@@ -24,6 +24,8 @@ public class LicenseManagerImpl implements LicenseManager {
         "d8dac290-1d93-46dd-a12f-f1d85bc59724"
     };
 
+
+
     @Value("${license.key}")
     private String license_key;
 
